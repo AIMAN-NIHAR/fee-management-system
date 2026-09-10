@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Edit Student{% endblock %}
+{% block page_title %}Edit Student{% endblock %}
+
+{% block content %}
+<div class="card card-stat p-4" style="max-width: 600px;">
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('edit_student', student_id=student[0]) }}">
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-control" value="{{ student[2] }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Roll Number</label>
+            <input type="text" name="roll_number" class="form-control" value="{{ student[3] }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input type="text" name="department" class="form-control" value="{{ student[4] }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Semester</label>
+            <input type="number" name="semester" class="form-control" value="{{ student[5] }}" min="1" max="8">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 text-white" style="background: linear-gradient(135deg, #1a2980, #26d0ce); border:none; padding:11px; border-radius:10px;">
+            <i class="bi bi-check-circle-fill me-2"></i>Save Changes
+        </button>
+    </form>
+</div>
+{% endblock %}

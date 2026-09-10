@@ -1,0 +1,89 @@
+{% extends 'student_base.html' %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+
+<h5 class="mb-4">Welcome, {{ student[2] if student else session['username'] }} 👋</h5>
+
+{% if student %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card card-stat p-3">
+            <h6 class="text-muted mb-1">Roll Number</h6>
+            <h5 class="mb-0">{{ student[3] }}</h5>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat p-3">
+            <h6 class="text-muted mb-1">Department</h6>
+            <h5 class="mb-0">{{ student[4] or '—' }}</h5>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat p-3">
+            <h6 class="text-muted mb-1">Semester</h6>
+            <h5 class="mb-0">{{ student[5] or '—' }}</h5>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- My Fees -->
+    <div class="col-md-6">
+        <div class="card card-stat p-3 h-100">
+            <h6 class="mb-3"><i class="bi bi-cash-coin text-primary me-1"></i> My Fees</h6>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for fee in fees %}
+                    <tr>
+                        <td>Rs. {{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>
+                            {% if fee[3] == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif fee[3] == 'partial' %}
+                                <span class="badge bg-warning text-dark">Partial</span>
+                            {% else %}
+                                <span class="badge bg-danger">Unpaid</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="text-center text-muted py-3">No fees assigned yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- My Payments -->
+    <div class="col-md-6">
+        <div class="card card-stat p-3 h-100">
+            <h6 class="mb-3"><i class="bi bi-receipt text-success me-1"></i> My Payments</h6>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr><th>Amount Paid</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td>Rs. {{ p[0] }}</td>
+                        <td>{{ p[1] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="2" class="text-center text-muted py-3">No payments yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-warning">Your student profile could not be found. Please contact the admin.</div>
+{% endif %}
+
+{% endblock %}

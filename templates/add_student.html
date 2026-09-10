@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Add Student{% endblock %}
+{% block page_title %}Add New Student{% endblock %}
+
+{% block content %}
+<div class="card card-stat p-4" style="max-width: 600px;">
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('add_student') }}">
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Roll Number</label>
+            <input type="text" name="roll_number" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input type="text" name="department" class="form-control" placeholder="e.g. Computer Science">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Semester</label>
+            <input type="number" name="semester" class="form-control" min="1" max="8">
+        </div>
+
+        <hr>
+        <p class="text-muted small">This will also create a login account for the student.</p>
+
+        <div class="mb-3">
+            <label class="form-label">Login Username</label>
+            <input type="text" name="username" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Login Password</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 text-white" style="background: linear-gradient(135deg, #1a2980, #26d0ce); border:none; padding:11px; border-radius:10px;">
+            <i class="bi bi-check-circle-fill me-2"></i>Add Student
+        </button>
+    </form>
+</div>
+{% endblock %}

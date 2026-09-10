@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Assign Fees{% endblock %}
+{% block page_title %}Assign Fees{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+    <!-- Assign Fee Form -->
+    <div class="col-md-5">
+        <div class="card card-stat p-4">
+            <h6 class="mb-3"><i class="bi bi-cash-coin text-primary me-1"></i> Assign New Fee</h6>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('assign_fees') }}">
+                <div class="mb-3">
+                    <label class="form-label">Select Student</label>
+                    <select name="student_id" class="form-select" required>
+                        <option value="" disabled selected>Choose a student</option>
+                        {% for student in students %}
+                        <option value="{{ student[0] }}">{{ student[2] }} ({{ student[3] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total Amount (Rs.)</label>
+                    <input type="number" name="total_amount" class="form-control" min="0" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" name="due_date" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 text-white" style="background: linear-gradient(135deg, #1a2980, #26d0ce); border:none; padding:11px; border-radius:10px;">
+                    <i class="bi bi-check-circle-fill me-2"></i>Assign Fee
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- All Assigned Fees -->
+    <div class="col-md-7">
+        <div class="card card-stat p-3">
+            <h6 class="mb-3"><i class="bi bi-list-ul text-info me-1"></i> All Assigned Fees</h6>
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+</tr>
+</thead>
+                <tbody>
+                    {% for fee in fees %}
+                    <tr>
+                        <td>{{ fee[1] }}</td>
+                        <td>Rs. {{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>
+                            <td>
+    {% if fee[4] == 'paid' %}
+        <span class="badge bg-success">Paid</span>
+    {% elif fee[4] == 'partial' %}
+        <span class="badge bg-warning text-dark">Partial</span>
+    {% else %}
+        <span class="badge bg-danger">Unpaid</span>
+    {% endif %}
+</td>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('fee_slip', fee_id=fee[0]) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-printer-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">No fees assigned yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
