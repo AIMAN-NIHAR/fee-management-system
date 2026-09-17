@@ -1,6 +1,7 @@
+import os
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 class Config:
-    MYSQL_HOST = 'localhost'
-    MYSQL_USER = 'root'
-    MYSQL_PASSWORD = 'admin123'
-    MYSQL_DB = 'smart_fee_db'
-    SECRET_KEY = 'your_secret_key_here'
+    SECRET_KEY = 'change-this-to-something-random'
+    DATABASE = os.path.join(BASE_DIR, 'fee_management.db')
