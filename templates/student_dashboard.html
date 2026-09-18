@@ -34,12 +34,13 @@
             <h6 class="mb-3"><i class="bi bi-cash-coin text-primary me-1"></i> My Fees</h6>
             <table class="table table-sm mb-0">
                 <thead>
-                    <tr><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+                    <tr><th>Amount</th><th>Remaining</th><th>Due Date</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                     {% for fee in fees %}
                     <tr>
                         <td>Rs. {{ fee[1] }}</td>
+                        <td>Rs. {{ fee[1] - fee[4] }}</td>
                         <td>{{ fee[2] }}</td>
                         <td>
                             {% if fee[3] == 'paid' %}
@@ -52,7 +53,7 @@
                         </td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="3" class="text-center text-muted py-3">No fees assigned yet.</td></tr>
+                    <tr><td colspan="4" class="text-center text-muted py-3">No fees assigned yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

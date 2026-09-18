@@ -106,7 +106,9 @@
             <a href="{{ url_for('assign_fees') }}"><i class="bi bi-cash-coin"></i><span class="link-text">Assign Fees</span></a>
             <a href="{{ url_for('record_payments') }}"><i class="bi bi-receipt"></i><span class="link-text">Record Payments</span></a>
             <a href="{{ url_for('change_password') }}"><i class="bi bi-key-fill"></i><span class="link-text">Change Password</span></a>
+            <a href="{{ url_for('download_backup') }}"><i class="bi bi-cloud-download-fill"></i><span class="link-text">Download Backup</span></a>
             <a href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i><span class="link-text">Logout</span></a>
+            <a href="{{ url_for('exit_app') }}" onclick="return confirm('This will completely close the application. Continue?');"><i class="bi bi-power"></i><span class="link-text">Exit Application</span></a>
         </div>
 
         <div style="flex: 1;">

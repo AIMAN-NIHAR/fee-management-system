@@ -2,9 +2,49 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from config import Config
 from database import get_db, init_app
 
-app = Flask(__name__)
+import sys
+import os
+import threading
+import shutil
+import glob
+from datetime import datetime
+from flask import send_file
+
+def resource_path(relative_path):
+    """Get correct path whether running normally or as a packaged .exe"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+app = Flask(__name__, template_folder=resource_path('templates'), static_folder=resource_path('static'))
+
+
+def backup_database():
+    """Silently copies the database into a backups folder every time the app starts."""
+    try:
+        db_path = app.config['DATABASE']
+        if not os.path.exists(db_path):
+            return
+
+        backup_dir = os.path.join(os.path.dirname(db_path), 'backups')
+        os.makedirs(backup_dir, exist_ok=True)
+
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        backup_path = os.path.join(backup_dir, f'fee_management_{timestamp}.db')
+        shutil.copy2(db_path, backup_path)
+
+        backups = sorted(glob.glob(os.path.join(backup_dir, 'fee_management_*.db')))
+        for old_backup in backups[:-15]:
+            os.remove(old_backup)
+
+    except Exception:
+        pass  # Never let a backup failure crash the app
+
+
 app.config.from_object(Config)
 init_app(app)  # makes sure the SQLite connection closes after each request
+
+backup_database()
 
 
 @app.route('/')
@@ -326,38 +366,16 @@ def record_payments():
 
     return render_template('record_payments.html', unpaid_fees=unpaid_fees, payments=payments, last_fee_id=last_fee_id)
 
-
-@app.route('/student/dashboard')
-def student_dashboard():
-    if 'role' not in session or session['role'] != 'student':
+@app.route('/admin/backup')
+def download_backup():
+    if 'role' not in session or session['role'] != 'admin':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
+    db_path = app.config['DATABASE']
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    download_name = f'fee_management_backup_{timestamp}.db'
 
-    cur.execute("SELECT * FROM students WHERE user_id = ?", (session['user_id'],))
-    student = cur.fetchone()
-
-    fees = []
-    payments = []
-
-    if student:
-        student_id = student[0]
-
-        cur.execute("SELECT id, total_amount, due_date, status FROM fees WHERE student_id = ? ORDER BY due_date ASC", (student_id,))
-        fees = cur.fetchall()
-
-        cur.execute("""
-            SELECT payments.amount_paid, payments.payment_date
-            FROM payments
-            JOIN fees ON payments.fee_id = fees.id
-            WHERE fees.student_id = ?
-            ORDER BY payments.payment_date DESC
-        """, (student_id,))
-        payments = cur.fetchall()
-
-    return render_template('student_dashboard.html', student=student, fees=fees, payments=payments)
-
+    return send_file(db_path, as_attachment=True, download_name=download_name)
 
 @app.route('/admin/change_password', methods=['GET', 'POST'])
 def change_password():
@@ -395,6 +413,60 @@ def change_password():
 
     return render_template('change_password.html')
 
+
+@app.route('/student/dashboard')
+def student_dashboard():
+    if 'role' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+
+    db = get_db()
+    cur = db.cursor()
+
+    cur.execute("SELECT * FROM students WHERE user_id = ?", (session['user_id'],))
+    student = cur.fetchone()
+
+    fees = []
+    payments = []
+
+    if student:
+        student_id = student[0]
+
+        # Each fee row now also includes paid_amount (fee[4]), so the
+        # template can calculate "remaining" automatically without a
+        # separate query.
+        cur.execute("""
+            SELECT fees.id, fees.total_amount, fees.due_date, fees.status,
+                   COALESCE(SUM(payments.amount_paid), 0) AS paid_amount
+            FROM fees
+            LEFT JOIN payments ON payments.fee_id = fees.id
+            WHERE fees.student_id = ?
+            GROUP BY fees.id
+            ORDER BY fees.due_date ASC
+        """, (student_id,))
+        fees = cur.fetchall()
+
+        cur.execute("""
+            SELECT payments.amount_paid, payments.payment_date
+            FROM payments
+            JOIN fees ON payments.fee_id = fees.id
+            WHERE fees.student_id = ?
+            ORDER BY payments.payment_date DESC
+        """, (student_id,))
+        payments = cur.fetchall()
+
+    return render_template('student_dashboard.html', student=student, fees=fees, payments=payments)
+
+@app.route('/exit_app')
+def exit_app():
+    if 'role' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+
+    def shutdown():
+        os._exit(0)
+
+    threading.Timer(1.0, shutdown).start()
+    return render_template('exit.html')
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -404,4 +476,4 @@ def logout():
 if __name__ == '__main__':
     import webbrowser
     webbrowser.open('http://127.0.0.1:5000')
-    app.run(debug=True)
+    app.run(debug=False, use_reloader=False)
